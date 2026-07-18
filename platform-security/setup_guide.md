@@ -26,4 +26,4 @@ Quick steps to get the project running locally so we can start coding.
 
 ## Note:
 If you need help, feel free to use ChatGPT/Claude to learn Fastify, Zod or PostgreSQL connections. If you get blocked, just send a screenshot in the group chat and we'll fix it together.
-
+.
