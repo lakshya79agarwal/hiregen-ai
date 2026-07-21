@@ -1,29 +1,25 @@
-# Developer Setup Guide - Team 1 (Platform & Security)
+# Setup Guide
 
-Quick steps to get the project running locally so we can start coding.
+## Prereqs
+- Node.js LTS
+- npm
+- PostgreSQL or a valid DATABASE_URL
 
-## Prereqs to install:
-- Node.js (LTS version)
-- Git (CLI or GitHub Desktop)
-- PostgreSQL
-- VS Code (or whatever editor you like)
+## Local setup
+1. Copy the example env file:
+   - `copy platform-security\.env.example platform-security\.env`
+2. Fill the values in `platform-security/.env`.
+3. Install packages:
+   - `npm install --prefix platform-security`
+4. Start the service:
+   - From repo root: `npm run dev`
+   - Or from service folder: `npm --prefix platform-security run dev`
 
-## Run steps:
-1. Go into the folder:
-   `cd platform-security`
-2. Install packages:
-   `npm install` (run `npm.cmd install` if PowerShell blocks script execution)
-3. Test the server:
-   `node src/server.js` (should start on port 3000)
+## Production setup
+- Set the same variables in your host, Docker, or cloud platform.
+- Use strong JWT secrets.
+- Keep `.env` local. Do not commit it.
 
-## Folder layout:
-- `routes/` -> holds endpoint paths and request validations (using zod)
-- `controllers/` -> connects routes to services
-- `services/` -> actual logic (auth logic, password hashing, token gen)
-- `repositories/` -> SQL queries only (no DB logic in services or routes)
-- `middleware/` -> JWT validation and RBAC role checks
-- `config/` -> DB connections and config keys
-
-## Note:
-If you need help, feel free to use ChatGPT/Claude to learn Fastify, Zod or PostgreSQL connections. If you get blocked, just send a screenshot in the group chat and we'll fix it together.
-.
+## Notes
+- If you use a cloud database, set `DATABASE_URL` and skip the DB host fields.
+- If you use local Postgres, keep `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` in `.env`.
