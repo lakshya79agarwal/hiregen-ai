@@ -1,16 +1,20 @@
-// env
 const env = require('./env')
 const { Pool } = require('pg')
 
-// config
+const poolConfig = env.DATABASE_URL
+  ? { connectionString: env.DATABASE_URL }
+  : {
+      host: env.DB_HOST,
+      port: parseInt(env.DB_PORT, 10),
+      database: env.DB_NAME,
+      user: env.DB_USER,
+      password: env.DB_PASSWORD
+    }
+
 const pool = new Pool({
-  host: env.DB_HOST,
-  port: parseInt(env.DB_PORT, 10),
-  database: env.DB_NAME,
-  user: env.DB_USER,
-  password: env.DB_PASSWORD,
+  ...poolConfig,
   max: 10,
-  connectionTimeoutMillis: 5000 // security: avoid hanging requests if DB is unreachable
+  connectionTimeoutMillis: 5000
 })
 
 // error
