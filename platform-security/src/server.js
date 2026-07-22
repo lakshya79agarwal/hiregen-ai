@@ -1,9 +1,11 @@
 // env
+const bcrypt = require('bcrypt')
 const env = require('./config/env')
 const db = require('./config/db')
 const AppError = require('./utils/AppError')
 const { error: errResponse } = require('./utils/response')
 const { generalLimit } = require('./middleware/rateLimit')
+const { upsertAdminUser } = require('./repositories/user.repository')
 
 // fastify config
 const fastify = require('fastify')({
@@ -19,6 +21,8 @@ fastify.register(require('@fastify/cors'), {
 
 fastify.register(require('@fastify/helmet'))
 fastify.register(require('@fastify/rate-limit'), generalLimit)
+fastify.register(require('./routes/auth'))
+fastify.register(require('./routes/admin'))
 
 // health route
 fastify.get('/health', async (request, reply) => {
@@ -59,12 +63,22 @@ fastify.setNotFoundHandler((request, reply) => {
   reply.code(404).send(errResponse('Route not found', request.id))
 })
 
+async function seedAdminUser() {
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@hiregen.ai'
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123'
+  const passwordHash = await bcrypt.hash(adminPassword, 10)
+
+  await upsertAdminUser(adminEmail, passwordHash, 'System Admin', 'ADMIN')
+  console.log(`[AUTH] Admin seed ensured for ${adminEmail}`)
+}
+
 // start
 async function start() {
   try {
     await db.health()
     console.log('[DB] Connected')
-    
+    await seedAdminUser()
+
     await fastify.listen({
       port: parseInt(env.PORT, 10),
       host: '0.0.0.0'
