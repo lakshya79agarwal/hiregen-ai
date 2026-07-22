@@ -11,12 +11,12 @@
     "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
-    "@fastify/cors": "^11.3.0",
-    "@fastify/helmet": "^13.1.0",
-    "@fastify/rate-limit": "^11.1.0",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/helmet": "^11.1.1",
+    "@fastify/rate-limit": "^9.1.0",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
-    "fastify": "^4.28.1",
+    "fastify": "^4.29.1",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.12.0",
     "pino": "^9.2.0",
