@@ -21,7 +21,9 @@ fastify.register(require('@fastify/cors'), {
 
 fastify.register(require('@fastify/helmet'))
 fastify.register(require('@fastify/rate-limit'), generalLimit)
-fastify.register(require('./routes/auth'))
+fastify.register(require('./routes/auth'), {
+  prefix: '/api/v1'
+})
 fastify.register(require('./routes/admin'))
 
 // health route

@@ -1,46 +1,50 @@
 const { success, error } = require('../utils/response')
-const { login, refresh, logout } = require('../services/authService')
+const authService = require('../services/authService')
 
 async function loginHandler(request, reply) {
   try {
-    const { email, password } = request.body || {}
-    const result = await login(email, password)
+    const result = await authService.login(request.body)
 
-    return reply.code(200).send(success(result, request.id))
+    return reply
+      .code(200)
+      .send(success(result, request.id))
   } catch (err) {
-    const statusCode = err.statusCode || 500
-    const message = err.message || 'Login failed'
-
-    return reply.code(statusCode).send(error(message, request.id))
+    return reply
+      .code(err.statusCode ?? 500)
+      .send(error(err.message || 'Login failed', request.id))
   }
 }
 
 async function refreshHandler(request, reply) {
   try {
-    const { refreshToken } = request.body || {}
-    const result = await refresh(refreshToken)
+    const result = await authService.refresh(request.body)
 
-    return reply.code(200).send(success(result, request.id))
+    return reply
+      .code(200)
+      .send(success(result, request.id))
   } catch (err) {
-    const statusCode = err.statusCode || 500
-    const message = err.message || 'Refresh failed'
-
-    return reply.code(statusCode).send(error(message, request.id))
+    return reply
+      .code(err.statusCode ?? 500)
+      .send(error(err.message || 'Refresh failed', request.id))
   }
 }
 
 async function logoutHandler(request, reply) {
   try {
-    const { refreshToken } = request.body || {}
-    const result = await logout(refreshToken)
+    const result = await authService.logout(request.body)
 
-    return reply.code(200).send(success(result, request.id))
+    return reply
+      .code(200)
+      .send(success(result, request.id))
   } catch (err) {
-    const statusCode = err.statusCode || 500
-    const message = err.message || 'Logout failed'
-
-    return reply.code(statusCode).send(error(message, request.id))
+    return reply
+      .code(err.statusCode ?? 500)
+      .send(error(err.message || 'Logout failed', request.id))
   }
 }
 
-module.exports = { loginHandler, refreshHandler, logoutHandler }
+module.exports = {
+  loginHandler,
+  refreshHandler,
+  logoutHandler
+}
