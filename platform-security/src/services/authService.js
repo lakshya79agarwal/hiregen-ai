@@ -6,6 +6,29 @@ const AppError = require('../utils/AppError')
 const { findByEmail, findById } = require('../repositories/user.repository')
 const { saveRefreshToken, getRefreshToken, revokeRefreshToken } = require('../repositories/auth.repository')
 
+function parseDuration(duration) {
+  const normalized = String(duration || '').trim()
+  const match = /^([0-9]+)([smhd])$/.exec(normalized)
+  if (!match) {
+    throw new AppError(`Invalid token duration format: ${duration}`, 500)
+  }
+
+  const value = Number(match[1])
+  const unit = match[2]
+  const multipliers = {
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000
+  }
+
+  return value * multipliers[unit]
+}
+
+function getTokenExpiryDate(duration) {
+  return new Date(Date.now() + parseDuration(duration))
+}
+
 async function login(email, password) {
   const normalizedEmail = String(email || '').trim().toLowerCase()
 
@@ -36,7 +59,7 @@ async function login(email, password) {
       role: user.role
     },
     env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: env.ACCESS_TOKEN_EXPIRES_IN }
   )
 
   const refreshToken = jwt.sign(
@@ -45,11 +68,11 @@ async function login(email, password) {
       type: 'refresh'
     },
     env.REFRESH_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: env.REFRESH_TOKEN_EXPIRES_IN }
   )
 
   const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex')
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  const expiresAt = getTokenExpiryDate(env.REFRESH_TOKEN_EXPIRES_IN)
 
   await saveRefreshToken(user.id, refreshTokenHash, expiresAt)
 
@@ -104,7 +127,7 @@ async function refresh(refreshToken) {
       role: user.role
     },
     env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: env.ACCESS_TOKEN_EXPIRES_IN }
   )
 
   const newRefreshToken = jwt.sign(
@@ -113,12 +136,17 @@ async function refresh(refreshToken) {
       type: 'refresh'
     },
     env.REFRESH_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: env.REFRESH_TOKEN_EXPIRES_IN }
   )
 
   const newRefreshTokenHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex')
 
-  await saveRefreshToken(user.id, newRefreshTokenHash, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+  try {
+    await saveRefreshToken(user.id, newRefreshTokenHash, getTokenExpiryDate(env.REFRESH_TOKEN_EXPIRES_IN))
+  } catch (err) {
+    // surface DB errors for debugging in tests
+    throw new AppError(`Failed to save refresh token: ${err.message}`, 500)
+  }
 
   return {
     user: {
@@ -145,4 +173,4 @@ async function logout(refreshToken) {
   }
 }
 
-module.exports = { login, refresh, logout }
+module.exports = { login, refresh, logout, parseDuration, getTokenExpiryDate }

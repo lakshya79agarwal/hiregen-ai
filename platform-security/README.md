@@ -1,42 +1,73 @@
-# Platform Security Backend
+Backend
+## What this service does
 
-This service is the authentication and authorization backend for HireGen AI.
+- Provides JWT login, refresh, and logout
+- Stores refresh tokens safely in PostgreSQL
+- Uses Fastify for routes and middleware
+- Enforces role-based access control (RBAC)
+- Uses plain SQL queries, not an ORM
+- Applies versioned migrations to build database schema
+- Seeds a default admin account for local/dev use: admin@hiregen.ai / Admin@123
 
-## What is included
+## How to use it
 
-- Fastify server with production-style response contract
-- PostgreSQL connection using plain parameterized SQL
-- Zod-based startup environment validation
-- JWT authentication
-- Refresh token support
-- Logout support
-- Role-Based Access Control (RBAC)
-- Versioned SQL migrations
-- Repository structure aligned to the shared domain model
+1. Copy the example env file:
 
-## Main response contract
-
-All API handlers follow this shape:
-
-```json
-{
-  "success": true,
-  "data": {},
-  "error": null,
-  "meta": {
-    "requestId": "..."
-  }
-}
+```powershell
+copy .env.example .env
 ```
 
-## Default admin credentials
+2. Fill the required values in `platform-security/.env`
 
-- Email: admin@hiregen.ai
-- Password: Admin@123
+3. Install packages:
 
-## Required environment variables
+```powershell
+npm install
+```
 
-Set these in a local `.env` file before starting the service:
+4. Run database migrations:
+
+```powershell
+npm run migrate
+```
+
+> Migration is required only when setting up a new database or when database schema changes are added. Do not run it every time unless the schema is updated or the DB is new.
+
+5. Start the server:
+
+```powershell
+npm run start
+```
+
+## Default admin access
+
+- The service seeds a default admin user on startup with the credentials admin@hiregen.ai / Admin@123.
+- Use this admin account to log in first, then create or manage other users and assign roles such as ADMIN or MANAGER.
+- The protected admin route allows roles ADMIN and MANAGER, so RBAC behavior is enforced through the middleware chain.
+
+## JWT secret setup
+
+- `JWT_SECRET` and `REFRESH_SECRET` must be set manually in `.env`.
+- They are not generated automatically by the service.
+- Set these once and do not change them for every token expiry.
+- Use strong random strings with at least 32 characters.
+- Keep them private and do not commit them to Git.
+
+Example generation command:
+
+```powershell
+cd platform-security
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+## Database setup for the team
+
+- Each teammate can use their own database credentials.
+- They can use either `DATABASE_URL` or the individual DB variables.
+- If the DB is local, the database server must be running.
+- If the DB is remote, only network access is required.
+
+### Recommended environment variables
 
 ```env
 NODE_ENV=development
@@ -48,22 +79,30 @@ DB_USER=postgres
 DB_PASSWORD=your-password
 JWT_SECRET=your-32-character-secret
 REFRESH_SECRET=your-32-character-secret
-ADMIN_EMAIL=admin@hiregen.ai
-ADMIN_PASSWORD=Admin@123
 DATABASE_URL=postgresql://postgres:your-password@localhost:5432/postgres
 ```
 
-## Commands
+## How to verify the database
 
-```bash
-cd platform-security
-npm install
-npm run migrate
-npm run start
+Use a SQL client or `psql`:
+
+```sql
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+SELECT id, email, role FROM users;
+SELECT id, user_id, revoked, expires_at FROM refresh_tokens LIMIT 10;
 ```
 
-## Notes
+## Main files team should know
 
-- No ORM is used.
-- Queries are plain SQL with parameter binding.
-- Migrations are versioned and should be run on a blank PostgreSQL database in CI/staging.
+- `src/server.js` — starts the service and loads routes
+- `src/config/env.js` — validates environment variables
+- `src/config/db.js` — connects to PostgreSQL
+- `src/routes/auth.js` — auth endpoints
+- `src/routes/admin.js` — protected admin endpoint
+- `src/controllers/` — handles requests and responses
+- `src/services/authService.js` — auth logic and token handling
+- `src/repositories/` — database SQL operations
+- `src/middleware/` — token and role checks
+- `migrations/` — database schema and indexes
+- `docs/platform-security-handbook.pdf` — module guide for teammates
+

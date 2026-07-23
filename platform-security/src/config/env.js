@@ -48,6 +48,8 @@ const schema = z.object({
   DB_PASSWORD: z.string().min(1),
   JWT_SECRET: z.string().min(32),
   REFRESH_SECRET: z.string().min(32),
+  ACCESS_TOKEN_EXPIRES_IN: z.string().default('15m'),
+  REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
   FRONTEND_URL: z.string().url().optional(),
   DATABASE_URL: z.string().url().optional()
 })

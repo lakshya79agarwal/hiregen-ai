@@ -1,8 +1,22 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
 const { Client } = require('pg')
+const { parseDuration, getTokenExpiryDate } = require('../src/services/authService')
 
 const connectionString = process.env.DATABASE_URL
+
+test('token duration helpers parse supported suffixes', () => {
+  assert.equal(parseDuration('15m'), 15 * 60 * 1000)
+  assert.equal(parseDuration('7d'), 7 * 24 * 60 * 60 * 1000)
+})
+
+test('token expiry date is computed in the future', () => {
+  const now = Date.now()
+  const expiry = getTokenExpiryDate('1m')
+
+  assert.ok(expiry > now)
+  assert.ok(expiry <= now + 61 * 1000)
+})
 
 test('database migration integration', { skip: !connectionString }, async (t) => {
   let client

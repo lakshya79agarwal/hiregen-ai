@@ -7,6 +7,9 @@ const { error: errResponse } = require('./utils/response')
 const { generalLimit } = require('./middleware/rateLimit')
 const { upsertAdminUser } = require('./repositories/user.repository')
 
+const DEFAULT_ADMIN_EMAIL = 'admin@hiregen.ai'
+const DEFAULT_ADMIN_PASSWORD = 'Admin@123'
+
 // fastify config
 const fastify = require('fastify')({
   logger: env.NODE_ENV === 'development',
@@ -64,8 +67,8 @@ fastify.setNotFoundHandler((request, reply) => {
 })
 
 async function seedAdminUser() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@hiregen.ai'
-  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123'
+  const adminEmail = process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL
+  const adminPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
   const passwordHash = await bcrypt.hash(adminPassword, 10)
 
   await upsertAdminUser(adminEmail, passwordHash, 'System Admin', 'ADMIN')

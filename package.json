@@ -1,0 +1,8 @@
+{
+  "name": "hiregen-ai",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix platform-security run dev",
+    "start": "npm --prefix platform-security run start"
+  }
+}
