@@ -3,6 +3,10 @@
   "private": true,
   "scripts": {
     "dev": "npm --prefix platform-security run dev",
-    "start": "npm --prefix platform-security run start"
+    "start": "npm --prefix platform-security run start",
+    "build": "npm --prefix platform-security run build",
+    "test": "npm --prefix platform-security run test",
+    "lint": "npm --prefix platform-security run lint",
+    "migrate": "npm --prefix platform-security run migrate"
   }
 }
