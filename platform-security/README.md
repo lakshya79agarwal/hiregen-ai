@@ -104,5 +104,5 @@ SELECT id, user_id, revoked, expires_at FROM refresh_tokens LIMIT 10;
 - `src/repositories/` — database SQL operations
 - `src/middleware/` — token and role checks
 - `migrations/` — database schema and indexes
-- `docs/platform-security-handbook.pdf` — module guide for teammates
+
 
