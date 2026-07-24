@@ -1,4 +1,4 @@
-Backend
+Backend Service
 ## What this service does
 
 - Provides JWT login, refresh, and logout
